@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: nsw_property
+    description: Silver tables produced by the Databricks pipeline (notebooks/10_bronze_to_silver).
+    database: workspace
+    schema: nsw_property
+    tables:
+      - name: silver_property_sales
+        description: One row per property sale, deduplicated on property_id + dealing_number.
+        columns:
+          - name: property_id
+            data_tests:
+              - not_null
+          - name: dealing_number
+            data_tests:
+              - not_null
+              
