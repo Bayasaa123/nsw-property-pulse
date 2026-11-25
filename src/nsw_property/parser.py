@@ -28,6 +28,7 @@ def parse_sales(records: DataFrame) -> DataFrame:
             field(1).alias("district_code"),
             field(2).cast("bigint").alias("property_id"),
             field(3).cast("int").alias("sale_counter"),
+            F.to_timestamp(field(4), "yyyyMMdd HH:mm").alias("download_ts"),
             field(6).alias("unit_number"),
             field(7).alias("house_number"),
             field(8).alias("street_name"),
@@ -125,4 +126,23 @@ def build_sales(records: DataFrame) -> DataFrame:
         parse_sales(records)
         .join(parse_legal(records), SALE_KEY, "left")
         .join(parse_parties(records), SALE_KEY, "left")
+    )
+
+def add_quality_flags(sales: DataFrame) -> DataFrame:
+    """Borluulalt burt ugugdliin chanariin shalgalt nemne"""
+    issues = F.array_compact(F.array(
+        F.when(F.col("property_id").isNull(), F.lit("missing_property_id")),
+        F.when(F.col("dealing_number").isNull(), F.lit("missing_dealing_number")),
+        F.when(F.col("contract_date").isNull(), F.lit("missing_contract_date")),
+        F.when(F.col("purchase_price").isNull(), F.lit("missing_price")),
+        F.when(
+            F.col("settlement_date") < F.col("contract_date"),
+            F.lit("settlement_before_contract"),
+        ),
+    ))
+
+    return (
+        sales
+        .withColumn("dq_issues", issues)
+        .withColumn("is_valid", F.size("dq_issues") == 0)
     )
