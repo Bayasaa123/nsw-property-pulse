@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: stg_property_sales
+    description: Cleaned property sales, one row per sale, with property_type classification.
+    columns:
+      - name: property_type
+        description: house, unit, vacant_land or other(commercial, industrial, etc.)
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['house', 'unit', 'vacant_land', 'other']
+      - name: purchase_price
+        data_tests:
+          - not_null
+          
