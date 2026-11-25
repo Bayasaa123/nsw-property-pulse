@@ -1,0 +1,39 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: One row per calendar day, 1990 - 2030, with Australian Financial year (July - June).
+    columns:
+      - name: date_day
+        data_tests:
+          - unique
+          - not_null
+
+  - name: dim_suburb
+    description: One row per suburb and postcode.
+    columns:
+      - name: suburb_key
+        data_tests:
+          - unique 
+          - not_null 
+
+  - name: fact_property_sale
+    description: One row per property sale (grain = property_id + dealing_number). 
+    columns:
+      - name: sale_key
+        data_tests:
+          - unique 
+          - not_null 
+      - name: suburb_key
+        data_tests:
+          - not_null 
+          - relationships:
+              arguments:
+                to: ref('dim_suburb')
+                field: suburb_key
+      - name: contract_date
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
